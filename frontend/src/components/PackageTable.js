@@ -1,7 +1,7 @@
 import React from 'react';
 import { Table, TableHead, TableBody, TableRow, TableCell } from '@mui/material';
 
-function PackageTable({ packages }) {
+function PackageTable({ packages, created  }) {
   return (
     <Table>
       <TableHead>
@@ -9,6 +9,7 @@ function PackageTable({ packages }) {
           <TableCell>Package Name</TableCell>
           <TableCell>Version</TableCell>
           <TableCell>License</TableCell>
+          <TableCell>Created On</TableCell>
         </TableRow>
       </TableHead>
       <TableBody>
@@ -17,6 +18,7 @@ function PackageTable({ packages }) {
             <TableCell>{pkg.name}</TableCell>
             <TableCell>{pkg.version}</TableCell>
             <TableCell>{pkg.license}</TableCell>
+            <TableCell>{created}</TableCell>
           </TableRow>
         ))}
       </TableBody>

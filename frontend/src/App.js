@@ -7,13 +7,18 @@ import SummaryCards from './components/SummaryCards';
 
 function App() {
   const [packages, setPackages] = useState([]);
+  const [created, setCreated] = useState(null);
   const [summary, setSummary] = useState({});
 
   const fetchData = async () => {
     try {
       const pkgRes = await axios.get('http://localhost:8000/packages');
       const sumRes = await axios.get('http://localhost:8000/summary');
-      setPackages(pkgRes.data);
+
+      // ✅ Fix here
+      setPackages(pkgRes.data.packages || []);
+      setCreated(pkgRes.data.created || null);
+
       setSummary(sumRes.data);
     } catch (err) {
       console.error('Failed to fetch data:', err);
@@ -29,7 +34,7 @@ function App() {
       <Typography variant="h4" gutterBottom>SBOM Dashboard</Typography>
       <UploadSection onUpload={fetchData} />
       <SummaryCards summary={summary} />
-      <PackageTable packages={packages} />
+      <PackageTable packages={packages} created={created} />
     </Container>
   );
 }

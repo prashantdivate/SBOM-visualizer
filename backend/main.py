@@ -28,7 +28,7 @@ async def upload_spdx(file: UploadFile = File(...)):
 def get_packages():
     files = sorted(os.listdir(UPLOAD_DIR))
     if not files:
-        return JSONResponse(content=[], status_code=200)
+        return JSONResponse(content={"created": None, "packages": []}, status_code=200)
 
     with open(os.path.join(UPLOAD_DIR, files[-1])) as f:
         data = json.load(f)
@@ -36,6 +36,8 @@ def get_packages():
     # Parse the created date
     created_str = data.get("creationInfo", {}).get("created", None)
     created_date = None
+    print("Created_str:", created_str)
+
     if created_str:
         created_date = datetime.strptime(created_str, "%Y-%m-%dT%H:%M:%SZ")
 
@@ -48,11 +50,17 @@ def get_packages():
             "sha": pkg.get("checksumValue", []),
             "externalRefs": pkg.get("externalRefs", [])
         })
-    return JSONResponse(content=packages)
-    # return JSONResponse(content={
-    #     "created": created_date.isoformat() if created_date else None,
-    #     "packages": packages
-    # })
+
+    print("Created:", created_date)
+    print("Returning:", {
+        "created": created_date.isoformat() if created_date else None,
+        "packages": packages
+    })
+
+    return JSONResponse(content={
+        "created": created_date.isoformat() if created_date else None,
+        "packages": packages
+    })
 
 @app.get("/summary")
 def get_summary():
