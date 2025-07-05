@@ -6,16 +6,20 @@ import {
   Typography,
   Paper,
   LinearProgress,
+  CircularProgress,
+  Backdrop,
 } from '@mui/material';
 
 function UploadSection({ onUpload }) {
   const [file, setFile] = useState(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const handleChange = (event) => {
     setFile(event.target.files[0]);
-    setUploadProgress(0); // reset progress
+    setUploadProgress(0);
+    setIsProcessing(false);
   };
 
   const handleUpload = async () => {
@@ -26,6 +30,8 @@ function UploadSection({ onUpload }) {
 
     try {
       setIsUploading(true);
+      setIsProcessing(false);
+
       await axios.post('http://localhost:8000/upload', formData, {
         onUploadProgress: (progressEvent) => {
           const percentCompleted = Math.round(
@@ -34,11 +40,17 @@ function UploadSection({ onUpload }) {
           setUploadProgress(percentCompleted);
         },
       });
-      onUpload();
+
+      setIsUploading(false);
+      setIsProcessing(true); // ⏳ Start showing spinner
+
+      await onUpload(); // Wait for backend parsing/extraction
+
     } catch (error) {
       console.error('Upload failed:', error);
     } finally {
       setIsUploading(false);
+      setIsProcessing(false);
     }
   };
 
@@ -51,6 +63,7 @@ function UploadSection({ onUpload }) {
         borderRadius: 2,
         backgroundColor: '#f9f9f9',
         border: '1px solid #e0e0e0',
+        position: 'relative',
       }}
     >
       <Typography variant="h6" sx={{ mb: 2 }}>
@@ -68,13 +81,10 @@ function UploadSection({ onUpload }) {
         <Button
           variant="outlined"
           component="label"
+          disabled={isUploading || isProcessing}
         >
           Choose File
-          <input
-            type="file"
-            hidden
-            onChange={handleChange}
-          />
+          <input type="file" hidden onChange={handleChange} />
         </Button>
 
         <Typography variant="body2" color="text.secondary">
@@ -84,7 +94,7 @@ function UploadSection({ onUpload }) {
         <Button
           variant="contained"
           onClick={handleUpload}
-          disabled={!file || isUploading}
+          disabled={!file || isUploading || isProcessing}
         >
           {isUploading ? 'Uploading...' : 'Upload'}
         </Button>
@@ -98,15 +108,36 @@ function UploadSection({ onUpload }) {
         />
       )}
 
-      {uploadProgress === 100 && !isUploading && (
+      {uploadProgress === 100 && !isUploading && !isProcessing && (
         <Typography
           variant="body2"
           color="success.main"
           sx={{ mt: 1 }}
         >
-          Upload complete!!
+          Upload complete!
         </Typography>
       )}
+
+      {/* BACKDROP SPINNER DURING PROCESSING */}
+      <Backdrop
+        open={isProcessing}
+        sx={{
+          position: 'absolute',
+          zIndex: (theme) => theme.zIndex.drawer + 1,
+          color: '#000',
+          backgroundColor: 'rgba(255, 255, 255, 1)',
+          borderRadius: 2,
+        }}
+      >
+        <Box sx={{ textAlign: 'center' }}>
+          <CircularProgress color="inherit" />
+          <Typography variant="body1" sx={{ mt: 2 }}>
+            {isUploading
+              ? 'Uploading SPDX file...'
+              : 'Processing SPDX file. This may take a few moments...'}
+          </Typography>
+        </Box>
+      </Backdrop>
     </Paper>
   );
 }
