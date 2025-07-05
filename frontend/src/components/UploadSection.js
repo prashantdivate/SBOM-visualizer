@@ -30,8 +30,10 @@ function UploadSection({ onUpload }) {
 
     try {
       setIsUploading(true);
+      setUploadProgress(0);
       setIsProcessing(false);
 
+      // Upload file with progress
       await axios.post('http://localhost:8000/upload', formData, {
         onUploadProgress: (progressEvent) => {
           const percentCompleted = Math.round(
@@ -42,13 +44,19 @@ function UploadSection({ onUpload }) {
       });
 
       setIsUploading(false);
-      setIsProcessing(true); // ⏳ Start showing spinner
+      setIsProcessing(true); // Start processing spinner
 
-      await onUpload(); // Wait for backend parsing/extraction
+      // Call processing endpoint
+      await axios.post('http://localhost:8000/process');
 
+      setIsProcessing(false);
+
+      // Refresh data after processing
+      if (onUpload) {
+        onUpload();
+      }
     } catch (error) {
-      console.error('Upload failed:', error);
-    } finally {
+      console.error('Upload or processing failed:', error);
       setIsUploading(false);
       setIsProcessing(false);
     }
@@ -100,6 +108,7 @@ function UploadSection({ onUpload }) {
         </Button>
       </Box>
 
+      {/* Upload progress bar */}
       {isUploading && (
         <LinearProgress
           variant="determinate"
@@ -108,6 +117,7 @@ function UploadSection({ onUpload }) {
         />
       )}
 
+      {/* Upload complete message */}
       {uploadProgress === 100 && !isUploading && !isProcessing && (
         <Typography
           variant="body2"
@@ -118,23 +128,35 @@ function UploadSection({ onUpload }) {
         </Typography>
       )}
 
-      {/* BACKDROP SPINNER DURING PROCESSING */}
+      {/* Processing backdrop spinner */}
       <Backdrop
         open={isProcessing}
         sx={{
-          position: 'absolute',
+          position: 'fixed',
           zIndex: (theme) => theme.zIndex.drawer + 1,
           color: '#000',
-          backgroundColor: 'rgba(255, 255, 255, 1)',
-          borderRadius: 2,
+          backgroundColor: 'rgba(66, 62, 62, 0.8)',
         }}
       >
-        <Box sx={{ textAlign: 'center' }}>
+        <Box 
+            sx={{
+              backgroundColor: '#fff',
+              borderRadius: 3,
+              padding: 4,
+              boxShadow: 3,
+              textAlign: 'center',
+              minWidth: 300,
+            }}
+        >
           <CircularProgress color="inherit" />
-          <Typography variant="body1" sx={{ mt: 2 }}>
-            {isUploading
-              ? 'Uploading SPDX file...'
-              : 'Processing SPDX file. This may take a few moments...'}
+          <Typography
+            variant="h6"
+            sx={{
+              mt: 3,
+              fontSize: '1.2rem',
+            }}
+          >
+            Processing SPDX file. This may take a few moments...
           </Typography>
         </Box>
       </Backdrop>

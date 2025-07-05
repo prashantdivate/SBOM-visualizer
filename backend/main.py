@@ -41,15 +41,33 @@ async def upload_spdx(file: UploadFile = File(...)):
     with open(file_path, "wb") as f:
         f.write(await file.read())
 
+    # Save the filename for later processing
+    with open(os.path.join(UPLOAD_DIR, "latest_upload.txt"), "w") as f:
+        f.write(filename)
+
+    return {"status": "uploaded", "filename": filename}
+
+@app.post("/process")
+async def process_spdx():
+    try:
+        # Read latest uploaded filename
+        with open(os.path.join(UPLOAD_DIR, "latest_upload.txt")) as f:
+            latest_filename = f.read().strip()
+            latest_file_path = os.path.join(UPLOAD_DIR, latest_filename)
+    except Exception:
+        return JSONResponse(status_code=400, content={"error": "No uploaded file found"})
+
+    if not os.path.exists(latest_file_path):
+        return JSONResponse(status_code=400, content={"error": "Uploaded file missing"})
+
     # Clear old extraction folder and extract new
     if os.path.exists(EXTRACT_DIR):
         shutil.rmtree(EXTRACT_DIR)
     os.makedirs(EXTRACT_DIR, exist_ok=True)
 
-    # Decompress and extract
-    decompress_zst_tar(file_path, EXTRACT_DIR)
+    decompress_zst_tar(latest_file_path, EXTRACT_DIR)
 
-    return {"status": "uploaded and extracted", "filename": filename}
+    return {"status": "processed", "filename": latest_filename}
 
 @app.get("/packages")
 def get_packages():
@@ -64,7 +82,6 @@ def get_packages():
         with open(os.path.join(EXTRACT_DIR, fname)) as f:
             data = json.load(f)
 
-        # Get creation date from any valid file
         if not created_date:
             created_str = data.get("creationInfo", {}).get("created", None)
             if created_str:
@@ -78,10 +95,6 @@ def get_packages():
                 "sha": pkg.get("checksumValue", []),
                 "externalRefs": pkg.get("externalRefs", [])
             })
-        print("Returning:", {
-        "created": created_date.isoformat() if created_date else None,
-        "packages": packages
-    })
 
     return JSONResponse(content={
         "created": created_date.isoformat() if created_date else None,
