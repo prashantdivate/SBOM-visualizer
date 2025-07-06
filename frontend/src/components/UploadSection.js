@@ -68,6 +68,7 @@ function UploadSection({ onUpload }) {
       sx={{
         p: 3,
         mb: 4,
+        mt: 2,
         borderRadius: 2,
         backgroundColor: '#f9f9f9',
         border: '1px solid #e0e0e0',

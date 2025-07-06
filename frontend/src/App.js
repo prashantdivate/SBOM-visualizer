@@ -11,6 +11,8 @@ import UploadSection from './components/UploadSection';
 import PackageTable from './components/PackageTable';
 import SummaryCards from './components/SummaryCards';
 
+import { useTypingText } from "./useTypingtext";
+
 function App() {
   const [packages, setPackages] = useState([]);
   const [created, setCreated] = useState(null);
@@ -28,6 +30,12 @@ function App() {
       console.error('Failed to fetch data:', err);
     }
   };
+
+  const { word } = useTypingText(
+    ["upload", "scan", "analyze", "secure"],
+    50,
+    20,
+  );
 
   useEffect(() => {
     fetchData();
@@ -54,10 +62,25 @@ function App() {
       />
 
       {/* Main Content */}
-      <Container sx={{ pt: 4, pb: 6, position: 'relative', zIndex: 1 }}>
-        <Typography variant="h4" gutterBottom>
+      <Container sx={{ pt: 4, pb: 6, position: 'relative', zIndex: 1, color: 'black' }}>
+        <Typography
+          variant="h4"
+          gutterBottom
+          align="center"
+          sx={{
+            fontSize: '48px',
+            fontWeight: 'bold',
+            background: 'linear-gradient(to right, #2196F3, #9C27B0, #E91E63)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+          }}
+        >
           SBOM Manager Dashboard
         </Typography>
+
+        <div style={{ fontSize: "20px", marginTop:'5%' }}>
+          Simplify SBOM management by {word}
+        </div>
 
         <UploadSection onUpload={fetchData} />
         <SummaryCards summary={summary} />

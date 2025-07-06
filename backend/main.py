@@ -91,7 +91,7 @@ def get_packages():
             packages.append({
                 "name": pkg.get("name"),
                 "version": pkg.get("versionInfo"),
-                "license": pkg.get("licenseConcluded"),
+                "license": pkg.get("licenseDeclared"),
                 "sha": pkg.get("checksumValue", []),
                 "externalRefs": pkg.get("externalRefs", [])
             })
