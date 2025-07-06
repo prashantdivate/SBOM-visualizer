@@ -1,4 +1,4 @@
-# 🛡️ SBOM Manager Dashboard
+# 🛡️ SBOM visualizer
 
 A sleek and interactive web dashboard for managing Software Bill of Materials (SBOM). Upload SBOM files, analyze package metadata, and track license summaries — all in a visual and user-friendly interface.
 
