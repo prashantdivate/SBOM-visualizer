@@ -36,10 +36,15 @@ cd SBOM-visualizer
 #Install the python dependencies
 pip install fastapi uvicorn python-multipart zstandard
 
-# build the project
-docker-compose up --build
+# launch backend
+cd backend
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
 
-# launch the backend and frontend in web browser
+# launch frontend
+cd frontend
+npm start
+
+# launch application in web browser
 http://localhost:3000
 ```
 ---
